@@ -22,14 +22,15 @@ namespace NetSparkle.TestAppWPF
             }
             catch { }
 
-            _sparkle = new Sparkle("http://update.applimit.com/netsparkle/versioninfo.xml", SystemIcons.Application); //, "NetSparkleTestApp.exe");
+            _sparkle = new Sparkle("https://deadpikle.github.io/NetSparkle/files/sample-app/appcast.xml", SystemIcons.Application); //, "NetSparkleTestApp.exe");
             _sparkle.StartLoop(true, true);
         }
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            _sparkle.StopLoop();
-            Close();
+            _sparkle.CheckForUpdatesAtUserRequest();
+           // _sparkle.StopLoop();
+          //  Close();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System;
+using System.Windows.Forms;
 
 namespace NetSparkle.Interfaces
 {
@@ -15,16 +16,23 @@ namespace NetSparkle.Interfaces
         event EventHandler InstallAndRelaunch;
 
         /// <summary>
+        /// Enable or disable the download and install button (such as when your "Can I gracefully close the window?" function is async and you don't
+        /// want your user to click the button multiple times)
+        /// </summary>
+        /// <param name="shouldBeEnabled">True if the button should be enabled; false otherwise</param>
+        void SetDownloadAndInstallButtonEnabled(bool shouldBeEnabled);
+
+        /// <summary>
         /// Show the UI and waits
         /// </summary>
-        void ShowDialog();
+        DialogResult ShowDialog();
 
         /// <summary>
         /// Called when the download progress changes
         /// </summary>
         /// <param name="sender">not used.</param>
         /// <param name="e">used to resolve the progress of the download. Also contains the total size of the download</param>
-        void OnClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e);
+        void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e);
 
         /// <summary>
         /// Force window close
@@ -34,7 +42,6 @@ namespace NetSparkle.Interfaces
         /// <summary>
         /// Update UI to show file is downloaded and signature check result
         /// </summary>
-        /// <param name="signatureValid"></param>
-        void ChangeDownloadState(bool signatureValid);
+        void ChangeDownloadState();
     }
 }

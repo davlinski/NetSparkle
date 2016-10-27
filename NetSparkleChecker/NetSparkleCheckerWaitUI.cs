@@ -23,7 +23,7 @@ namespace NetSparkleChecker
             String[] args = Environment.GetCommandLineArgs();
 
             // init sparkle
-            _sparkle = new Sparkle(args[2], icon, args[1]);
+            _sparkle = new Sparkle(args[2], icon, SecurityMode.UseIfPossible, null, args[1]);
             
             // set labels
             lblRefFileName.Text = args[1];
@@ -40,18 +40,19 @@ namespace NetSparkleChecker
             _sparkle.ShowUpdateNeededUI(_updates);
         }
 
-        private void bckWorker_DoWork(object sender, DoWorkEventArgs e)
+        private async void bckWorker_DoWork(object sender, DoWorkEventArgs e)
         {            
             // get the config
             NetSparkleConfiguration config = _sparkle.GetApplicationConfig();
 
             // check for updats
-            NetSparkleAppCastItem[] newUpdates;
-            Boolean bUpdateRequired = Sparkle.UpdateStatus.UpdateAvailable == _sparkle.GetUpdateStatus(config, out newUpdates);
+            //NetSparkleAppCastItem[] newUpdates;
+            SparkleUpdateInfo updateInfo = await _sparkle.GetUpdateStatus(config);
+            Boolean bUpdateRequired = UpdateStatus.UpdateAvailable == updateInfo.Status;
                                 
             // save the result
             SparkleRequestedUpdate = bUpdateRequired;
-            _updates = newUpdates;
+            _updates = updateInfo.Updates;
         }
 
         private void bckWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

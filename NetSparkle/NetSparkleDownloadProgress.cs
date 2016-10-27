@@ -31,33 +31,38 @@ namespace NetSparkle
             // init ui
             btnInstallAndReLaunch.Visible = false;
             lblHeader.Text = lblHeader.Text.Replace("APP", item.AppName + " " + item.Version);
+            downloadProgressLbl.Text = "";
             progressDownload.Maximum = 100;
             progressDownload.Minimum = 0;
             progressDownload.Step = 1;
 
-            // show the right 
-            Size = new Size(Size.Width, 107);
-            lblSecurityHint.Visible = false;
+            FormClosing += NetSparkleDownloadProgress_FormClosing;
+        }
+
+        private void NetSparkleDownloadProgress_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
         }
 
         /// <summary>
         /// Show the UI and waits
         /// </summary>
-        void INetSparkleDownloadProgress.ShowDialog()
+        DialogResult INetSparkleDownloadProgress.ShowDialog()
         {
-            base.ShowDialog();
+            return base.ShowDialog();
         }
 
         /// <summary>
         /// Update UI to show file is downloaded and signature check result
         /// </summary>
         /// <param name="signatureValid"></param>
-        public void ChangeDownloadState(bool signatureValid)
+        public void ChangeDownloadState()
         {
             progressDownload.Visible = false;
+            buttonCancel.Visible = false;
+            downloadProgressLbl.Visible = false;
             btnInstallAndReLaunch.Visible = true;
-
-            UpdateDownloadValid(signatureValid);
+            FormClosing -= NetSparkleDownloadProgress_FormClosing;
         }
 
         /// <summary>
@@ -69,27 +74,52 @@ namespace NetSparkle
             Close();
         }
 
-        /// <summary>
-        /// Updates the UI to indicate if the download is valid
-        /// </summary>
-        private void UpdateDownloadValid(bool signatureValid)
+        private string numBytesToUserReadableString(long numBytes)
         {
-            if (!signatureValid)
+            if (numBytes > 1024)
             {
-                Size = new Size(Size.Width, 137);
-                lblSecurityHint.Visible = true;
-                BackColor = Color.Tomato;
+                double numBytesDecimal = numBytes;
+                // Put in KB
+                numBytesDecimal /= 1024;
+                if (numBytesDecimal > 1024)
+                {
+                    // Put in MB
+                    numBytesDecimal /= 1024;
+                    if (numBytesDecimal > 1024)
+                    {
+                        // Put in GB
+                        numBytesDecimal /= 1024;
+                        return numBytesDecimal.ToString("F2") + " GB";
+                    }
+                    return numBytesDecimal.ToString("F2") + " MB";
+                }
+                return numBytesDecimal.ToString("F2") + " KB";
             }
+            return numBytes.ToString();
         }
-               
+
         /// <summary>
         /// Event called when the client download progress changes
         /// </summary>
-        /// <param name="sender">not used.</param>
-        /// <param name="e">not used.</param>
-        public void OnClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        /// <param name="sender"></param>
+        /// <param name="bytesReceived"></param>
+        /// <param name="totalBytesToReceive"></param>
+        /// <param name="percentage"></param>
+        private void OnDownloadProgressChanged(object sender, long bytesReceived, long totalBytesToReceive, int percentage)
         {
-            progressDownload.Value = e.ProgressPercentage;            
+            progressDownload.Value = percentage;
+            downloadProgressLbl.Text = " (" + numBytesToUserReadableString(bytesReceived) + " / " + 
+                numBytesToUserReadableString(totalBytesToReceive) + ")";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            OnDownloadProgressChanged(sender, e.BytesReceived, e.TotalBytesToReceive, e.ProgressPercentage);
         }
 
         /// <summary>
@@ -99,10 +129,22 @@ namespace NetSparkle
         /// <param name="e">not used.</param>
         private void OnInstallAndReLaunchClick(object sender, EventArgs e)
         {
-            if (InstallAndRelaunch != null)
-            {
-                InstallAndRelaunch(this, new EventArgs());
-            }
+            InstallAndRelaunch?.Invoke(this, new EventArgs());
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="shouldBeEnabled"></param>
+        public void SetDownloadAndInstallButtonEnabled(bool shouldBeEnabled)
+        {
+            btnInstallAndReLaunch.Enabled = shouldBeEnabled;
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
     }
 }

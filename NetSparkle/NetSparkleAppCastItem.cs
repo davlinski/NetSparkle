@@ -24,13 +24,21 @@ namespace NetSparkle
         /// </summary>
         public string ReleaseNotesLink { get; set; }
         /// <summary>
+        /// The DSA signature of the Release Notes file
+        /// </summary>
+        public string ReleaseNotesDSASignature { get; set; }
+        /// <summary>
+        /// The embedded description
+        /// </summary>
+        public string Description { get; set; }
+        /// <summary>
         /// The download link
         /// </summary>
         public string DownloadLink { get; set; }
         /// <summary>
-        /// The DSA signature
+        /// The DSA signature of the download file
         /// </summary>
-        public string DSASignature { get; set; }
+        public string DownloadDSASignature { get; set; }
         /// <summary>
         /// Date item was published
         /// </summary>
@@ -44,9 +52,12 @@ namespace NetSparkle
         /// <returns>-1, 0, 1 if this instance is less than, equal to, or greater than the <paramref name="other"/></returns>
         public int CompareTo(NetSparkleAppCastItem other)
         {
+            if (!Version.Contains(".") || !other.Version.Contains("."))
+            {
+                return 0;
+            }
             Version v1 = new Version(Version);
             Version v2 = new Version(other.Version);
-
             return v1.CompareTo(v2);
         }
 
